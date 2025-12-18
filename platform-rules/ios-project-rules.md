@@ -845,9 +845,75 @@ let dateString = formatter.string(from: date)
 
 ---
 
+## �️ CORE DATA BEST PRACTICES (NEW)
+
+### Core Data File Generation
+
+**SmartCallBlock Project Reference Implementation:**
+
+**Setup (First Time Only):**
+```bash
+cd IOS/
+python3 generate_core_data_files.py
+```
+
+**Configuration in Xcode:**
+1. Open DataModel.xcdatamodel
+2. Select each Entity
+3. Set **Code Generation** to "Manual" (not "Class Definition")
+4. Reason: Allows script-based auto-generation with proper formatting
+
+**Python Generator Script:**
+```python
+# File: generate_core_data_files.py
+# Parses DataModel.xcdatamodel XML
+# Auto-generates:
+#   - Entity+CoreDataClass.swift
+#   - Entity+CoreDataProperties.swift
+```
+
+**Git Hook Integration:**
+```bash
+# File: .git/hooks/pre-commit
+# Auto-runs generator if DataModel.xcdatamodel changed
+# Automatically adds generated files to commit
+```
+
+**Workflow:**
+```bash
+# 1. Edit DataModel.xcdatamodel in Xcode
+# 2. Commit changes (hook auto-generates files)
+git commit -m "Update Core Data schema"
+
+# 3. Generated files auto-included in commit
+# No manual file generation needed!
+```
+
+**Schema Migration:**
+- Enable automatic lightweight migration in AppDelegate/PersistenceController
+- Set: `shouldInferMappingModelAutomatically = true`
+- Set: `shouldMigrateStoreAutomatically = true`
+- Implement migration detection to handle schema mismatches
+
+**SmartCallBlock Example:**
+```swift
+// SmartCallBlockApp.swift
+storeDescription.shouldInferMappingModelAutomatically = true
+storeDescription.shouldMigrateStoreAutomatically = true
+
+// Implement migration handler
+private func handleSchemaMigration() {
+    // Detect schema mismatch and handle gracefully
+    // Remove incompatible stores for fresh migration
+}
+```
+
+---
+
 ## 📚 RELATED DOCUMENTATION
 
 - **Cross-Platform Rules**: [`CROSS_PLATFORM_RULES.md`](../CROSS_PLATFORM_RULES.md)
 - **AI Guidelines**: [`AI_GUIDELINES.md`](../AI_GUIDELINES.md)
 - **Workflow Commands**: [`WORKFLOW_COMMANDS.md`](./WORKFLOW_COMMANDS.md)
 - **iOS Checklists**: [`checklists/ios/`](./checklists/ios/)
+- **SmartCallBlock Updates**: [`../../smart-call-block/IOS/DEVELOPMENT_UPDATES.md`](../../smart-call-block/IOS/DEVELOPMENT_UPDATES.md)
