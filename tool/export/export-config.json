@@ -1,0 +1,84 @@
+{
+  "projectName": "smart-call-block",
+  "displayName": "Smart Call Block",
+  "version": "1.0.0",
+  "author": "Development Team",
+  "description": "Cross-platform call blocking application",
+  "android": {
+    "enabled": true,
+    "projectPath": "Android.App/{projectName}",
+    "essentialFiles": [
+      "build.gradle",
+      "settings.gradle",
+      "gradle.properties",
+      "gradlew.bat",
+      "build-apk.bat",
+      "build-release.bat",
+      "get-version.ps1",
+      "README.md",
+      "SETUP_GUIDE.md",
+      ".gitignore",
+      "gradle/wrapper",
+      "app/src",
+      "app/build.gradle",
+      "app/proguard-rules.pro",
+      "admin",
+      "docs"
+    ],
+    "buildArtifacts": [
+      "app/build",
+      ".gradle",
+      "build",
+      "local.properties"
+    ],
+    "outputFileName": "{projectName}-android-source.zip"
+  },
+  
+  "ios": {
+    "enabled": true,
+    "projectPath": "IOS.App/{projectName}",
+    "essentialFiles": [
+      "{projectName}.xcodeproj",
+      "{projectName}.xcworkspace",
+      "{projectName}",
+      "CallDirectoryExtension",
+      "build-ios.sh",
+      "build-ios-helper.bat",
+      "BUILD_SCRIPTS.md",
+      "README.md",
+      "docs"
+    ],
+    "buildArtifacts": [
+      "build",
+      "DerivedData",
+      "xcuserdata",
+      ".DS_Store"
+    ],
+    "outputFileName": "{projectName}-ios-source.zip"
+  },
+  
+  "crossPlatform": {
+    "outputFileName": "{projectName}-complete-source.zip",
+    "includeDevRules": true,
+    "devRulesPath": "development-rules",
+    "storeSubmissionGuides": "development-rules/guides/store-submission"
+  },
+  
+  "export": {
+    "outputBasePath": "../export-source",
+    "includeTimestamp": true,
+    "createReadme": true,
+    "zipCompression": "optimal"
+  },
+  
+  "detection": {
+    "android": {
+      "indicators": ["build.gradle", "app/build.gradle", "settings.gradle"],
+      "requiredFiles": ["app/src"]
+    },
+    "ios": {
+      "indicators": [".xcodeproj", ".xcworkspace"],
+      "requiredFiles": ["Info.plist"]
+    }
+  }
+}

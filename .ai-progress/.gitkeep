@@ -1,0 +1,18 @@
+# AI Progress Tracking - Keep All Files in This Folder
+
+# This development-rules/.ai-progress folder contains AI session management 
+# templates and guidelines that should be shared across all projects.
+# 
+# COMMIT TO GIT: All files in this folder should be tracked
+# - ai-progress-tracking-quick.md (essential workflow)
+# - ai-progress-tracking.md (detailed reference)
+# - Any future templates and examples
+#
+# Unlike project-specific .ai-progress folders (which should be gitignored),
+# this development-rules/.ai-progress folder provides shared standards.
+
+# For project folders, add to .gitignore:
+# .ai-progress/
+# .ai-completed/
+
+# Keep all files in this development-rules/.ai-progress/ folder committed to git
