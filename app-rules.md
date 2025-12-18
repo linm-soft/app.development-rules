@@ -249,6 +249,20 @@ try {
 - **MVVM** with SwiftUI/UIKit
 - **Coordinator Pattern** for navigation
 - **Repository Pattern** for data access
+- **Singleton Pattern** for shared managers (DialogManager, CallBlockManager)
+
+#### 🔔 iOS Dialog/Overlay Pattern ⚠️ CRITICAL
+
+**✅ See Implementation Standards:**
+- **Complete code examples**: [`implementation/ios/dialog-overlay-implementation.md`](./implementation/ios/dialog-overlay-implementation.md)
+- **Real SmartCallBlock example**: [`implementation/ios/smartcallblock-dialog-example.md`](./implementation/ios/smartcallblock-dialog-example.md)
+- **iOS architecture guide**: [`platform-rules/ios-project-rules.md`](./platform-rules/ios-project-rules.md)
+
+#### 📋 Android Dialog Pattern
+**Recommended:**
+- **DialogFragment** or **AlertDialog.Builder** with ViewModel coordination
+- **LiveData/StateFlow** for dialog state management
+- Centralized DialogManager if cross-activity dialogs needed
 
 **Android:**
 - **MVVM** with ViewBinding/DataBinding
@@ -431,6 +445,9 @@ applicationId "linm.soft.[appname]"
 - **Xcode Crashes**: See [iOS Xcode Crash Troubleshooting](checklists/ios/ios-xcode-crash-troubleshooting.md)
 - **Project File Corruption**: Check for ID collisions in .pbxproj files
 - **Code Signing**: Verify development team configuration (`TeamLinm2805`)
+- **Dialog/Overlay Not Showing**: Ensure `CommonDialogOverlay()` is applied in feature view
+- **"Cannot find DialogManager in scope"**: Apply overlay in feature views, not app root (compilation order)
+- **@StateObject vs @ObservedObject**: Use `@ObservedObject` for singletons in overlays
 
 ### Android Project Issues:
 - **Build Failures**: Check Gradle sync and dependency versions
