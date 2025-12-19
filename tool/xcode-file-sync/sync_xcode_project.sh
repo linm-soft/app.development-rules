@@ -77,7 +77,7 @@ fi
 
 # 3. Chạy Python script để thêm file
 print_info "Thêm file vào project..."
-python3 << 'ENDPYTHON'
+python3 << ENDPYTHON
 import re
 import uuid
 import shutil
@@ -86,18 +86,20 @@ import glob
 from pathlib import Path
 from datetime import datetime
 
-PBXPROJ_PATH = sys.argv[1]
-PROJECT_ROOT = sys.argv[2]
+PBXPROJ_PATH = "$PBXPROJ_PATH"
+PROJECT_ROOT = "$PROJECT_ROOT"
 
-# Auto-detect Swift files in project
+# Auto-detect Swift files in project (including subdirectories)
 swift_files_dir = Path(PROJECT_ROOT)
 swift_files = []
+app_folder = None
 
 # Find main folder (usually the app name)
 for item in swift_files_dir.iterdir():
-    if item.is_dir() and item.name != "build" and not item.name.startswith("."):
-        # This is likely the main app folder
-        for swift_file in item.glob("*.swift"):
+    if item.is_dir() and item.name != "build" and not item.name.startswith(".") and not item.name.endswith(".xcodeproj"):
+        app_folder = item
+        # Scan all Swift files recursively
+        for swift_file in item.rglob("*.swift"):
             swift_files.append(swift_file.name)
         break
 
@@ -121,9 +123,9 @@ print(f"  ✓ Backup: {backup_path}")
 with open(PBXPROJ_PATH, 'r') as f:
     content = f.read()
 
-# Kiểm tra file đã có
+# Kiểm tra file đã có (check cả path có quotes và không có quotes)
 existing = set()
-for m in re.finditer(r'path = "([^"]+\.swift)"', content):
+for m in re.finditer(r'path = "?([^";]+\.swift)"?;', content):
     existing.add(m.group(1))
 
 to_add = [f for f in MISSING_FILES if f not in existing]
@@ -134,15 +136,17 @@ if not to_add:
 
 print(f"  • Cần thêm: {len(to_add)} file")
 
-# ID mapping
-ids = {}
+# ID mapping - tạo 2 ID cho mỗi file: 1 cho FileReference, 1 cho BuildFile
+file_ref_ids = {}
+build_file_ids = {}
 for f in to_add:
-    ids[f] = generate_id()
+    file_ref_ids[f] = generate_id()
+    build_file_ids[f] = generate_id()
 
 # Thêm vào PBXFileReference
 file_refs = ""
 for f in to_add:
-    file_refs += f'\t\t7B4F{ids[f]}2C1B8F9E00123456 /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = {f}; sourceTree = "<group>"; }};\n'
+    file_refs += f'\t\t7B4F{file_ref_ids[f]}2C1B8F9E00123456 /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = {f}; sourceTree = "<group>"; }};\n'
 
 content = re.sub(
     r'(\s*)(/\* End PBXFileReference section \*/)',
@@ -150,10 +154,10 @@ content = re.sub(
     content
 )
 
-# Thêm vào PBXBuildFile
+# Thêm vào PBXBuildFile - dùng build_file_ids và reference đến file_ref_ids
 build_files = ""
 for f in to_add:
-    build_files += f'\t\t7B4F{generate_id()}2C1B8F9E00123456 /* {f} in Sources */ = {{isa = PBXBuildFile; fileRef = 7B4F{ids[f]}2C1B8F9E00123456 /* {f} */; }};\n'
+    build_files += f'\t\t7B4F{build_file_ids[f]}2C1B8F9E00123456 /* {f} in Sources */ = {{isa = PBXBuildFile; fileRef = 7B4F{file_ref_ids[f]}2C1B8F9E00123456 /* {f} */; }};\n'
 
 content = re.sub(
     r'(\s*)(/\* End PBXBuildFile section \*/)',
@@ -161,21 +165,21 @@ content = re.sub(
     content
 )
 
-# Thêm vào SmartCallBlock group
+# Thêm vào SmartCallBlock group - dùng file_ref_ids
 for f in to_add:
     content = re.sub(
         r'(7B4F1C282C1B8F9D00123456 /\* SmartCallBlock \*/ = \{.*?children = \([^)]*)',
-        rf'\1\n\t\t\t\t7B4F{ids[f]}2C1B8F9E00123456 /* {f} */,',
+        rf'\1\n\t\t\t\t7B4F{file_ref_ids[f]}2C1B8F9E00123456 /* {f} */,',
         content,
         count=1,
         flags=re.DOTALL
     )
 
-# Thêm vào Sources build phase
+# Thêm vào Sources build phase - QUAN TRỌNG: dùng build_file_ids (không phải generate mới!)
 for f in to_add:
     content = re.sub(
         r'(7B4F1C222C1B8F9D00123456 /\* Sources \*/ = \{.*?files = \([^)]*)',
-        rf'\1\n\t\t\t\t7B4F{generate_id()}2C1B8F9E00123456 /* {f} in Sources */,',
+        rf'\1\n\t\t\t\t7B4F{build_file_ids[f]}2C1B8F9E00123456 /* {f} in Sources */,',
         content,
         count=1,
         flags=re.DOTALL
@@ -186,7 +190,7 @@ with open(PBXPROJ_PATH, 'w') as f:
     f.write(content)
 
 print(f"  ✓ Đã thêm {len(to_add)} file")
-ENDPYTHON "$PBXPROJ_PATH" "$PROJECT_ROOT"
+ENDPYTHON
 
 print_success "File đã thêm vào project"
 
