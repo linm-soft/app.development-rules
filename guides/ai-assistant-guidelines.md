@@ -37,7 +37,7 @@ When user requests new rule creation:
 
 ### Content Validation
 Before providing code suggestions:
-- **Check current file type** (rules/implementation/standards)
+- **Check current file type** (rules/implementation/android)
 - **Determine appropriate content level** for file type
 - **Suggest correct placement** if content doesn't match file type
 - **Provide relocation guidance** for misplaced content

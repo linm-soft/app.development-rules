@@ -28,18 +28,18 @@
 - **Main file (ANDROID_PROJECT_RULES.md):** Quick Reference ONLY - max 3-4 lines per section
 - **Category files (rules/*.md):** Quick reference with links to implementation details
 - **Implementation details:** ALWAYS go in separate `implementation/*.md` files
-- **Design standards:** Go in `implementation/standards/*.md` for reusable design system components
+- **Design standards:** Go in `implementation/android/*.md` for Android-specific implementations
 - **Step-by-step procedures:** Go in `procedures/*.md` for detailed workflow guides
-- **Navigation structure:** ANDROID_PROJECT_RULES → rules/ → implementation/ → standards/ → procedures/
+- **Navigation structure:** ANDROID_PROJECT_RULES → rules/ → implementation/android/ → procedures/
 
 **🚨 CRITICAL: NEVER PUT JAVA CODE IN IMPLEMENTATION FILES**
 - **implementation/*.md**: HIGH-LEVEL GUIDES ONLY - No Java code allowed
-- **implementation/standards/*.md**: COMPLETE JAVA IMPLEMENTATION - All code goes here
+- **implementation/android/*.md**: COMPLETE JAVA IMPLEMENTATION - All code goes here
 - **Violation Detection**: Any ```java block in implementation/*.md is WRONG
 
 ## Link Patterns
 - **Rules to Implementation:** `**📂 See:** [`implementation/[topic]-implementation.md`](../implementation/[topic]-implementation.md)`
-- **Rules to Standards:** `**📂 See:** [`implementation/standards/[topic]-standards.md`](../implementation/standards/[topic]-standards.md)`
+- **Rules to Standards:** `**📂 See:** [`implementation/android/[topic]-standards.md`](../implementation/android/[topic]-standards.md)`
 - **Rules to Procedures:** `**📂 See:** [`procedures/[topic]-procedures.md`](../procedures/[topic]-procedures.md)`
 - **Standards back to Implementation:** `[← Back to Implementation](../)`
 - **Implementation back to Rules:** `[← Back to Main Rules](../ANDROID_PROJECT_RULES.md)`
@@ -47,7 +47,7 @@
 ## 🔄 MANDATORY Rule Creation Workflow
 1. **Create quick reference** in appropriate rules/*.md file (NO Java code)
 2. **Create implementation guide** in implementation/ with patterns/concepts (NO Java code)  
-3. **Create complete standards file** in implementation/standards/ with ALL Java code
+3. **Create complete standards file** in implementation/android/ with ALL Java code
 4. **Create detailed procedures** in procedures/ for step-by-step workflows (if needed)
 5. **Validate separation**: Implementation = concepts, Standards = code, Procedures = step-by-step workflows
 6. **Update navigation links** in all affected files
@@ -103,10 +103,10 @@ This file contains comprehensive implementation including:
 
 ### Content Separation Rules
 - **implementation/*.md**: Concepts, workflows, integration guides, references
-- **implementation/standards/*.md**: Ready-to-copy Java code, complete UI layouts
+- **implementation/android/*.md**: Ready-to-copy Java code, complete UI layouts
 - **procedures/*.md**: Step-by-step workflows, migration guides, detailed processes  
-- **NO OVERLAP**: If it's code, it belongs in standards/; if it's detailed steps, it belongs in procedures/
-- **NO EXCEPTIONS**: Even small code snippets must go to standards/
+- **NO OVERLAP**: If it's code, it belongs in android/; if it's detailed steps, it belongs in procedures/
+- **NO EXCEPTIONS**: Even small code snippets must go to android/
 
 ### When to Use procedures/ Folder
 **CREATE procedures/*.md files when you have:**
@@ -123,26 +123,26 @@ This file contains comprehensive implementation including:
 
 ### Pre-Creation Validation
 Before creating ANY implementation file:
-- [ ] Does my content include Java code? → Move to standards/
-- [ ] Am I writing complete implementations? → Move to standards/  
+- [ ] Does my content include Java code? → Move to android/
+- [ ] Am I writing complete implementations? → Move to android/  
 - [ ] Is this a high-level guide/concept? → Keep in implementation/
-- [ ] Do I reference where the actual code lives? → Required link to standards/
+- [ ] Do I reference where the actual code lives? → Required link to android/
 
 ### Validation Checklist
 Before creating/updating any rule or implementation:
-- [ ] **Java Code Location Check**: Any ```java blocks? Must be in standards/ file
+- [ ] **Java Code Location Check**: Any ```java blocks? Must be in android/ file
 - [ ] **Implementation File Purity**: implementation/*.md has NO code, only concepts?
-- [ ] **Standards File Completeness**: standards/*.md has ALL actual implementations?
+- [ ] **Standards File Completeness**: android/*.md has ALL actual implementations?
 - [ ] **Procedures File Purpose**: procedures/*.md contains step-by-step workflows only?
-- [ ] **Reference Links**: Does implementation/ properly reference standards/ and procedures/?
-- [ ] **Navigation Structure**: Links follow correct pattern (rules → implementation → standards → procedures)?
+- [ ] **Reference Links**: Does implementation/ properly reference android/ and procedures/?
+- [ ] **Navigation Structure**: Links follow correct pattern (rules → implementation → android → procedures)?
 - [ ] **Content Separation**: Clear separation between concepts vs code vs step-by-step workflows?
 
 ## 🔍 AUTO-DETECTION RULES FOR AI
 ```
 IF (file_path.includes("implementation/") && content.includes("```java")) {
   ERROR: "Java code detected in implementation file!"
-  ACTION: "Move all Java code to standards/ file"
+  ACTION: "Move all Java code to android/ file"
   FIX: "Replace with reference to standards file"
 }
 
@@ -171,7 +171,7 @@ public class MyClass {
 ```markdown
 <!-- implementation/my-feature.md -->
 ## ⚙️ JAVA IMPLEMENTATION
-**📂 Complete Implementation:** [My Feature Standards](standards/my-feature-standards.md)
+**📂 Complete Implementation:** [My Feature Standards](../android/my-feature-standards.md)
 This file contains comprehensive implementation including...
 ```
 
@@ -179,12 +179,12 @@ This file contains comprehensive implementation including...
 **WRONG:** Single file with both concepts and code
 **✅ CORRECT FIX:** Separate into:
 - **implementation/feature.md** - High-level concepts and references
-- **implementation/standards/feature-standards.md** - Complete Java implementations
+- **implementation/android/feature-standards.md** - Complete Java implementations
 
 ### ❌ VIOLATION: Missing References
 **WRONG:** Implementation without standards reference
 **✅ CORRECT FIX:**
 ```markdown
 ## ⚙️ JAVA IMPLEMENTATION
-**📂 Complete Implementation:** [Feature Standards](standards/feature-standards.md)
+**📂 Complete Implementation:** [Feature Standards](../android/feature-standards.md)
 ```

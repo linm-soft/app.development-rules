@@ -144,7 +144,7 @@ DialogType.CUSTOM    // Forms, expandable content, complex layouts
 
 ## 2.21. Spacing and Padding Standards ⚠️ CRITICAL
 
-**📂 See:** [`implementation/standards/spacing-padding-standards.md`](../implementation/standards/spacing-padding-standards.md)
+**📂 See:** [`implementation/android/spacing-padding-standards.md`](../implementation/android/spacing-padding-standards.md)
 
 **Complete Spacing System:**
 - **4dp increment system**: spacing_tiny(4) → spacing_xxlarge(32)
@@ -166,7 +166,7 @@ DialogType.CUSTOM    // Forms, expandable content, complex layouts
 
 ## 2.22. Border & Shape Standards ⚠️ REQUIRED
 
-**📂 See:** [`implementation/standards/border-shape-standards.md`](../implementation/standards/border-shape-standards.md)
+**📂 See:** [`implementation/android/border-shape-standards.md`](../implementation/android/border-shape-standards.md)
 
 **Complete Border System:**
 - **Corner radius scale**: radius_small(4dp) → radius_xlarge(20dp) + radius_round(50dp)
@@ -188,7 +188,7 @@ DialogType.CUSTOM    // Forms, expandable content, complex layouts
 
 ## 2.23. Style System Architecture ⚠️ REQUIRED
 
-**📂 See:** [`implementation/standards/style-system-architecture.md`](../implementation/standards/style-system-architecture.md)
+**📂 See:** [`implementation/android/style-system-architecture.md`](../implementation/android/style-system-architecture.md)
 
 **Complete Style Hierarchy:**
 - **File organization**: styles_shared.xml, styles_button.xml, styles_input.xml, etc.

@@ -14,7 +14,7 @@
 
 ### 🔍 Content Separation Validation
 - [ ] **implementation/*.md**: Contains NO ```java blocks
-- [ ] **implementation/standards/*.md**: Contains ALL actual Java code
+- [ ] **implementation/android/*.md**: Contains ALL actual Java code
 - [ ] Each implementation file references its standards counterpart
 - [ ] No duplicate content between files
 - [ ] Clear responsibility separation maintained

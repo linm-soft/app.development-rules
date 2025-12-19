@@ -451,14 +451,14 @@ This document serves as the central navigation hub for all AI assistant guidelin
 ### Rule Creation Process
 1. **Create quick reference** in appropriate rules/*.md file (NO Java code)
 2. **Create implementation guide** in implementation/ with concepts only
-3. **Create complete standards file** in implementation/standards/ with ALL code
+3. **Create complete standards file** in implementation/android/ with ALL code
 4. **Validate separation**: Implementation = concepts, Standards = code
 5. **Update navigation links** across all affected files
 
 ### Content Placement Rules
 - **rules/*.md**: Quick reference with links (max 3-4 lines per section)
 - **implementation/*.md**: High-level concepts and workflows (NO Java code)
-- **implementation/standards/*.md**: Complete Java implementations (ALL code)
+- **implementation/android/*.md**: Complete Java implementations (ALL code)
 - **guides/*.md**: Detailed processes and comprehensive guidelines
 
 ## 🔍 AUTO-DETECTION RULES

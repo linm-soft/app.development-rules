@@ -31,6 +31,7 @@ This directory contains development guidelines, standards, and workflows that ap
   - **[ui-resource-workflow.md](guides/ui-resource-workflow.md)** - UI resource management workflow
   - **[ai-assistant-guidelines.md](guides/ai-assistant-guidelines.md)** - AI interaction guidelines
   - **[validation-procedures.md](guides/validation-procedures.md)** - Code validation procedures
+- **[ios-file-management-guide.md](ios-file-management-guide.md)** - iOS file creation and Xcode project integration (NEW)
 
 ### 🔧 Implementation & Procedures
 - **[implementation/](implementation/)** - Code implementation patterns and standards

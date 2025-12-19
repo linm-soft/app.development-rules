@@ -88,7 +88,7 @@ AI assistance đang check "ANDROID_PROJECT_RULES"...
 ### 🛠️ Implementation Resources
 
 **📂 See:** [Implementation Guides](implementation/) - Comprehensive implementation details and patterns
-**📂 See:** [Standards Collection](implementation/standards/) - Complete Java implementations and UI layouts
+**📂 See:** [Android Standards](implementation/android/) - Complete Java implementations and UI layouts
 **📂 See:** [Build Validation](implementation/build-validation-procedures.md) - Build troubleshooting and prevention
 
 ### 🔗 Cross-References Between Categories

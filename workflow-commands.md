@@ -657,8 +657,8 @@ Step 3.5: Finalize Issue Tracking File
 | Command Pattern | AI Action | Files Created |
 |-----------------|-----------|---------------|
 | `add rule [number] [name] [priority] [description]` | Add rule to appropriate category file | 1. rules/[category]-rules.md entry |
-| `create standards [feature-name]` | Create standards file with UI + Java | 1. implementation/standards/[feature]-standards.md |
-| `add complete rule [number] [name] [priority]` | Complete rule creation workflow | 1. rules/ entry + 2. implementation/ guide + 3. standards/ file |
+| `create standards [feature-name]` | Create standards file with UI + Java | 1. implementation/android/[feature]-standards.md |
+| `add complete rule [number] [name] [priority]` | Complete rule creation workflow | 1. rules/ entry + 2. implementation/ guide + 3. android/ file |
 | `create implementation [name] referencing [standards]` | Create implementation guide | 1. implementation/[name]-implementation.md |
 | `update structure [file] to new standard` | Update file to new template | Updated file with proper structure |
 
@@ -678,7 +678,7 @@ AI MUST respond:
 📁 Files will be created:
    1. rules/[category]-rules.md → Add quick reference entry
    2. implementation/[name]-implementation.md → Full implementation guide
-   3. implementation/standards/[name]-standards.md → UI + Java code standards
+   3. implementation/android/[name]-standards.md → UI + Java code standards
 
 📊 Priority Level Reference:
    • 🔴 CRITICAL: App cannot function without this
@@ -703,7 +703,7 @@ Step 4: Create implementation/[name]-implementation.md with:
     - Related standards references  
     - Java implementation reference to standards
     - Integration checklist
-Step 5: Create implementation/standards/[name]-standards.md with:
+Step 5: Create implementation/android/[name]-standards.md with:
     - Complete UI layouts
     - Complete Java implementation
     - Navigation back to implementation
@@ -723,7 +723,7 @@ add complete rule 2.26 input-validation CRITICAL
 → Creates rules entry + implementation guide + standards with UI + Java
 
 create standards bottom-sheet-dialog  
-→ Creates implementation/standards/bottom-sheet-dialog-standards.md with UI + Java
+→ Creates implementation/android/bottom-sheet-dialog-standards.md with UI + Java
 
 add rule 2.27 crash-reporting OPTIONAL "Crash reporting and analytics integration"
 → Adds entry to rules/advanced-rules.md only
