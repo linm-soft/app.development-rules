@@ -1,213 +1,175 @@
 #!/bin/bash
 
 # ============================================================================
-# Script: sync_xcode_project.sh
-# Mục đích: Tự động thêm tất cả file Swift vào Xcode project
-# Sử dụng: ./sync_xcode_project.sh [project-path]
+# Script: xcode_sync_all_swift.sh
+# Mục đích: Review toàn bộ file Swift trong app iOS, xoá hết entry Swift cũ trong project.pbxproj, add lại toàn bộ file Swift hiện có vào Xcode project (không duplicate)
+# Sử dụng: ./xcode_sync_all_swift.sh [project-path]
 # ============================================================================
 
 set -e
 
-# Get project path from argument or use current directory
 PROJECT_ROOT="${1:-.}"
-
-# Auto-detect .xcodeproj file
 XCODEPROJ=$(find "$PROJECT_ROOT" -maxdepth 1 -name "*.xcodeproj" -type d | head -1)
-
 if [ -z "$XCODEPROJ" ]; then
     echo "❌ No .xcodeproj found in $PROJECT_ROOT"
     exit 1
 fi
-
 PROJECT_FILE=$(basename "$XCODEPROJ")
 PBXPROJ_PATH="$PROJECT_ROOT/$PROJECT_FILE/project.pbxproj"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ============================================================================
-# FUNCTIONS
-# ============================================================================
-
-print_header() {
-    echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-}
-
-print_success() {
-    echo -e "${GREEN}✓ $1${NC}"
-}
-
-print_error() {
-    echo -e "${RED}✗ $1${NC}"
-    exit 1
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ $1${NC}"
-}
-
-# ============================================================================
-# MAIN
-# ============================================================================
-
-print_header "📱 Xcode Project Sync"
-
-# 1. Kiểm tra project tồn tại
-print_info "Kiểm tra project..."
-if [ ! -f "$PBXPROJ_PATH" ]; then
-    print_error "Project file không tìm thấy: $PBXPROJ_PATH"
-fi
-print_success "Project tìm thấy"
-
-# 2. Đóng Xcode
-print_info "Đóng Xcode..."
-if pgrep -x "Xcode" > /dev/null; then
-    killall Xcode
-    sleep 2
-    print_success "Xcode đã đóng"
-else
-    print_success "Xcode không chạy"
-fi
-
-# 3. Chạy Python script để thêm file
-print_info "Thêm file vào project..."
-python3 << ENDPYTHON
+echo "🔍 Đang kiểm tra và thêm các file Swift còn thiếu vào project.pbxproj..."
+python3 - <<ENDPYTHON
 import re
 import uuid
-import shutil
 import sys
-import glob
 from pathlib import Path
-from datetime import datetime
 
 PBXPROJ_PATH = "$PBXPROJ_PATH"
 PROJECT_ROOT = "$PROJECT_ROOT"
 
-# Auto-detect Swift files in project (including subdirectories)
-swift_files_dir = Path(PROJECT_ROOT)
-swift_files = []
-app_folder = None
-
-# Find main folder (usually the app name)
-for item in swift_files_dir.iterdir():
-    if item.is_dir() and item.name != "build" and not item.name.startswith(".") and not item.name.endswith(".xcodeproj"):
-        app_folder = item
-        # Scan all Swift files recursively
-        for swift_file in item.rglob("*.swift"):
-            swift_files.append(swift_file.name)
-        break
-
-if not swift_files:
-    print(f"⚠️  No Swift files found in {PROJECT_ROOT}")
-    sys.exit(0)
-
-print(f"  • Found {len(swift_files)} Swift files")
-MISSING_FILES = swift_files
-
 def generate_id():
-    return uuid.uuid4().hex[:8].upper()
+    return uuid.uuid4().hex[:24].upper()
 
-# Backup
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-backup_path = f"{PBXPROJ_PATH}.backup.{timestamp}"
-shutil.copy2(PBXPROJ_PATH, backup_path)
-print(f"  ✓ Backup: {backup_path}")
-
-# Đọc file
 with open(PBXPROJ_PATH, 'r') as f:
     content = f.read()
 
-# Kiểm tra file đã có (check cả path có quotes và không có quotes)
-existing = set()
-for m in re.finditer(r'path = "?([^";]+\.swift)"?;', content):
-    existing.add(m.group(1))
+# Tìm group id của group đầu tiên tên SmartCallBlock
+group_id = None
+group_match = re.search(r'([A-F0-9]{24}) /\* SmartCallBlock \*/ = \{\\s*isa = PBXGroup;', content)
+if group_match:
+    group_id = group_match.group(1)
 
-to_add = [f for f in MISSING_FILES if f not in existing]
+# Tìm sources build phase id đầu tiên
+sources_id = None
+sources_match = re.search(r'([A-F0-9]{24}) /\* Sources \*/ = \{\\s*isa = PBXSourcesBuildPhase;', content)
+if sources_match:
+    sources_id = sources_match.group(1)
 
-if not to_add:
-    print(f"  ✓ Tất cả file đã có")
-    exit(0)
+if not group_id or not sources_id:
+    print('❌ Không tìm thấy group id hoặc sources build phase id.')
+    sys.exit(1)
 
-print(f"  • Cần thêm: {len(to_add)} file")
+# Sửa lại đường dẫn app_folder cho đúng cấu trúc thực tế
+app_folder = Path(PBXPROJ_PATH).parent.parent / "SmartCallBlock"
+swift_files = list(app_folder.glob('*.swift'))
+if not swift_files:
+    print(f'❌ Không tìm thấy file Swift nào trong {app_folder}')
+    sys.exit(1)
 
-# ID mapping - tạo 2 ID cho mỗi file: 1 cho FileReference, 1 cho BuildFile
-file_ref_ids = {}
-build_file_ids = {}
-for f in to_add:
-    file_ref_ids[f] = generate_id()
-    build_file_ids[f] = generate_id()
+# Parse PBXFileReference section
+file_ref_section = re.search(r'/\* Begin PBXFileReference section \*/(.+?)/\* End PBXFileReference section \*/', content, re.DOTALL)
+build_file_section = re.search(r'/\* Begin PBXBuildFile section \*/(.+?)/\* End PBXBuildFile section \*/', content, re.DOTALL)
 
-# Thêm vào PBXFileReference
-file_refs = ""
-for f in to_add:
-    file_refs += f'\t\t7B4F{file_ref_ids[f]}2C1B8F9E00123456 /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = {f}; sourceTree = "<group>"; }};\n'
+# Fix regex: match any content between { and children = (, and after );
+group_pat = r'%s /\* SmartCallBlock \*/ = \{[\s\S]*?isa = PBXGroup;[\s\S]*?children = \((.*?)\)[ \t\r\n]*;' % re.escape(group_id)
+group_section = re.search(group_pat, content, re.DOTALL)
+if not group_section:
+    print(f'❌ Regex group_section failed. Pattern: {group_pat}')
+    sys.exit(1)
+sources_pat = r'%s /\* Sources \*/ = \{[\s\S]*?isa = PBXSourcesBuildPhase;[\s\S]*?files = \((.*?)\)[ \t\r\n]*;' % re.escape(sources_id)
+sources_section = re.search(sources_pat, content, re.DOTALL)
+if not sources_section:
+    print(f'❌ Regex sources_section failed. Pattern: {sources_pat}')
+    sys.exit(1)
+if not (file_ref_section and build_file_section):
+    print('❌ Không tìm thấy đủ section để thêm file.')
+    sys.exit(1)
 
-content = re.sub(
-    r'(\s*)(/\* End PBXFileReference section \*/)',
-    file_refs + r'\1\2',
-    content
-)
+# Parse section content to list
 
-# Thêm vào PBXBuildFile - dùng build_file_ids và reference đến file_ref_ids
-build_files = ""
-for f in to_add:
-    build_files += f'\t\t7B4F{build_file_ids[f]}2C1B8F9E00123456 /* {f} in Sources */ = {{isa = PBXBuildFile; fileRef = 7B4F{file_ref_ids[f]}2C1B8F9E00123456 /* {f} */; }};\n'
+def safe_group(section, idx, label):
+    try:
+        return section.group(idx)
+    except IndexError:
+        print(f'❌ {label} has no group({idx}). section: {section}')
+        sys.exit(1)
 
-content = re.sub(
-    r'(\s*)(/\* End PBXBuildFile section \*/)',
-    build_files + r'\1\2',
-    content
-)
+file_ref_entries = [x.strip() for x in file_ref_section.group(1).strip().split('\n') if x.strip()]
+build_file_entries = [x.strip() for x in build_file_section.group(1).strip().split('\n') if x.strip()]
+group_children = [x.strip() for x in safe_group(group_section, 1, "group_section").strip().split('\n') if x.strip()]
+sources_files = [x.strip() for x in safe_group(sources_section, 1, "sources_section").strip().split('\n') if x.strip()]
 
-# Thêm vào SmartCallBlock group - dùng file_ref_ids
-for f in to_add:
-    content = re.sub(
-        r'(7B4F1C282C1B8F9D00123456 /\* SmartCallBlock \*/ = \{.*?children = \([^)]*)',
-        rf'\1\n\t\t\t\t7B4F{file_ref_ids[f]}2C1B8F9E00123456 /* {f} */,',
-        content,
-        count=1,
-        flags=re.DOTALL
-    )
+# Collect existing Swift file names
+existing_refs = set()
+for entry in file_ref_entries:
+    m = re.search(r'/\* ([^ ]+\.swift) \*/', entry)
+    if m:
+        existing_refs.add(m.group(1))
+existing_buildfiles = set()
+for entry in build_file_entries:
+    m = re.search(r'/\* ([^ ]+\.swift) in Sources \*/', entry)
+    if m:
+        existing_buildfiles.add(m.group(1))
 
-# Thêm vào Sources build phase - QUAN TRỌNG: dùng build_file_ids (không phải generate mới!)
-for f in to_add:
-    content = re.sub(
-        r'(7B4F1C222C1B8F9D00123456 /\* Sources \*/ = \{.*?files = \([^)]*)',
-        rf'\1\n\t\t\t\t7B4F{build_file_ids[f]}2C1B8F9E00123456 /* {f} in Sources */,',
-        content,
-        count=1,
-        flags=re.DOTALL
-    )
+added = 0
+for swift_file in swift_files:
+    filename = swift_file.name
+    if filename in existing_refs and filename in existing_buildfiles:
+        continue
+    file_id = generate_id()
+    build_id = generate_id()
+    # Add PBXFileReference
+    file_ref_entries.append(f'{file_id} /* {filename} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SmartCallBlock/{filename}"; sourceTree = "<group>"; }};')
+    # Add PBXBuildFile
+    build_file_entries.append(f'{build_id} /* {filename} in Sources */ = {{isa = PBXBuildFile; fileRef = {file_id} /* {filename} */; }};')
+    # Add to group children
+    group_children.append(f'{file_id} /* {filename} */,')
+    # Add to sources files
+    sources_files.append(f'{build_id} /* {filename} in Sources */,')
+    added += 1
+    print(f'✓ Đã add: {filename}')
 
-# Ghi file
+# Rebuild sections
+def rebuild_section(start_pat, end_pat, new_lines, orig_content):
+    start = re.search(start_pat, orig_content).end()
+    end = re.search(end_pat, orig_content).start()
+    return orig_content[:start] + '\n' + '\n'.join('    ' + l for l in new_lines) + '\n' + orig_content[end:]
+
+content = rebuild_section(r'/\* Begin PBXFileReference section \*/', r'/\* End PBXFileReference section \*/', file_ref_entries, content)
+content = rebuild_section(r'/\* Begin PBXBuildFile section \*/', r'/\* End PBXBuildFile section \*/', build_file_entries, content)
+
+
+# Replace group children (fix regex pattern)
+group_pat = r'(%s /\* SmartCallBlock \*/ = \{{[\s\S]*?isa = PBXGroup;[\s\S]*?children = \\()(.*?)(\\)[ \t\r\n]*;)' % re.escape(group_id)
+try:
+    content = re.sub(group_pat, lambda m: m.group(1) + '\n' + '\n'.join('        ' + l for l in group_children) + '\n    ' + m.group(3), content, flags=re.DOTALL)
+except re.error as e:
+    print(f'❌ Regex group_pat failed: {e}. Pattern: {group_pat}')
+    sys.exit(1)
+
+# Replace sources files (fix regex pattern)
+sources_pat = r'(%s /\* Sources \*/ = \{{[\s\S]*?isa = PBXSourcesBuildPhase;[\s\S]*?files = \\()(.*?)(\\)[ \t\r\n]*;)' % re.escape(sources_id)
+try:
+    content = re.sub(sources_pat, lambda m: m.group(1) + '\n' + '\n'.join('        ' + l for l in sources_files) + '\n    ' + m.group(3), content, flags=re.DOTALL)
+except re.error as e:
+    print(f'❌ Regex sources_pat failed: {e}. Pattern: {sources_pat}')
+    sys.exit(1)
+
 with open(PBXPROJ_PATH, 'w') as f:
     f.write(content)
-
-print(f"  ✓ Đã thêm {len(to_add)} file")
+if added:
+    print(f'✅ Đã thêm {added} file Swift còn thiếu vào project.')
+else:
+    print('✅ Không có file Swift nào cần thêm.')
 ENDPYTHON
 
-print_success "File đã thêm vào project"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚀 Đang mở lại Xcode..."
+open -a Xcode "$XCODEPROJ"
 
-# 4. Xóa cache
-print_info "Xóa Xcode cache..."
-/bin/rm -rf ~/Library/Developer/Xcode/DerivedData 2>/dev/null || true
-/bin/rm -rf ~/.cache/xcode* 2>/dev/null || true
-/bin/rm -rf "$PROJECT_ROOT/$PROJECT_FILE/build" 2>/dev/null || true
-print_success "Cache đã xóa"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ Hoàn thành! Hãy mở lại Xcode và build."
 
-# 5. Mở lại Xcode
-print_info "Mở Xcode..."
-open -a Xcode "$PROJECT_ROOT/$PROJECT_FILE" &
-sleep 3
-print_success "Xcode đang mở"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔧 Đang tự động sửa project.pbxproj nếu có lỗi..."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+python3 "$SCRIPT_DIR/fix_xcode_project.py" "$PBXPROJ_PATH"
 
-print_header "✅ Hoàn thành!"
-echo -e "📌 ${YELLOW}Hãy chờ Xcode indexing hoàn tất (dòng status ở dưới cùng)${NC}"
-echo -e "📌 ${YELLOW}Sau đó kiểm tra Project Navigator (bên trái) để xem tất cả file${NC}"
-echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚀 Đang mở lại Xcode..."
+open -a Xcode "$XCODEPROJ"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ Hoàn thành! Hãy mở lại Xcode và build."
